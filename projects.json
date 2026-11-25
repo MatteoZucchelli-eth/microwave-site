@@ -1,0 +1,6 @@
+[
+  { "id": "robot",    "title": "CV / robotics", "url": "/cv",     "object": "blender/objects/robot.py",    "slot": 0, "scale": 1.05 },
+  { "id": "plug_lid", "title": "soon",          "url": null,      "object": "blender/objects/plug_lid.py", "slot": 1 },
+  { "id": "pretzel",  "title": "Brezel",        "url": "/brezel", "object": "blender/objects/pretzel.py",  "slot": 2 },
+  { "id": "espresso", "title": "About",         "url": "/about",  "object": "blender/objects/espresso.py", "slot": 3 }
+]
