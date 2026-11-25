@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{title}} — {{name}}</title>
+  <meta name="description" content="{{description}}">
+  <link rel="alternate" type="application/rss+xml" title="{{name}}" href="/feed.xml">
+  <link rel="stylesheet" href="/pages.css">
+</head>
+<body class="{{kind}}">
+  <header class="top">
+    <a class="back hand" href="/">← back to the microwave</a>
+  </header>
+  <main>
+    <article>
+      {{hero}}
+      <p class="label hand">{{label}}</p>
+      <h1>{{title}}</h1>
+      {{meta}}
+      <div class="prose">
+{{content}}
+      </div>
+    </article>
+  </main>
+  <footer>
+    <p class="motto hand">{{motto}}.</p>
+    <p><a href="{{linkedin}}">say hi on LinkedIn →</a> · <a href="/blog/">blog</a> · <a href="/feed.xml">rss</a></p>
+  </footer>
+</body>
+</html>

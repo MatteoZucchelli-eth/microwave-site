@@ -31,6 +31,7 @@ body { background: #dcdfdb; -webkit-tap-highlight-color: transparent; }
   font: 13px/1.25 hand, "Comic Sans MS", cursive; color: #1a2a7a; text-align: center; text-decoration: none;
   white-space: pre-line;
 }
+.postit.long { font-size: 11px; }
 .postit:hover span, .postit:focus-visible span { text-decoration: underline wavy #1a2a7a55; }
 .postit:focus-visible { outline: 2px dashed #1a2a7a; }
 

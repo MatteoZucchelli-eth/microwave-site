@@ -14,6 +14,7 @@ passes (frames go to out/<preset>/, published files to public/render/<preset>/):
                       A: open + closed (seen through the closed door's holes)     -> A_open_<id>.webp, A_closed_<id>.webp
                       B: open                                                     -> B_open_<id>.webp
   ref               full stills to check compositing against                      -> out/<preset>/ref_*.webp
+  hero <id>         page header image of one object (high res)                    -> public/img/hero_<id>.webp
   all               everything, one process per pass
   manifest          rebuild manifest.json from out/<preset>/meta/
 
@@ -351,6 +352,28 @@ def pass_door(preset, out, pub, **_):
     save_meta(out, 'door', {'angles': angles, 'postit': quads, 'sheet': 'A_door.webp',
                             'rects': pack(paths, rects, f'{pub}/A_door.webp', preset['sheet'])})
 
+def pass_hero(pid, out, frames=FRAMES, **_):
+    """page header image: the object from view B, at the turntable frame where it faces the camera, high res,
+    transparent with its soft shadow -> public/img/hero_<id>.webp"""
+    preset = dict(PRESETS['hi'], spp=128)
+    s, plate, hinge, note, items = build('B'); setup(s, preset, True)
+    for k, r in items.items():
+        if k != pid: hide(tree(r))
+    me = tree(items[pid]); solo(me); drop_plate(); note.hide_render = True
+    bpy.context.view_layer.update(); M = cam_matrix(s); Wf, Hf, _, _ = sizes(preset)
+    pinv = np.array(plate.matrix_world.inverted()); loc = world_verts(me) @ pinv[:3, :3].T + pinv[:3, 3]
+    origin = np.array(plate.matrix_world.inverted() @ items[pid].matrix_world.translation)
+    def at(f):
+        plate.rotation_euler.z = PLATE_ROT0 + math.tau * f / frames; bpy.context.view_layer.update()
+        return np.array(plate.matrix_world)
+    f = min(range(frames), key=lambda f: project(M, (origin @ at(f)[:3, :3].T + at(f)[:3, 3])[None])[1][0])   # nearest
+    pm = at(f); q, _ = project(M, loc @ pm[:3, :3].T + pm[:3, 3])
+    bw, bh = (q[:, 0].ptp()) * Wf, (q[:, 1].ptp()) * Hf
+    rect = px_rect(q, Wf, Hf, pad=(int(bw * .35), int(bh * .08), int(bw * .35), int(bh * .22)))
+    path = os.path.join(ROOT, 'public', 'img', f'hero_{pid}.webp'); render(s, path, rect)
+    clean_catcher([path])
+    Image.open(path).save(path, quality=86, method=6)
+
 def manifest(preset, out, pub, frames=FRAMES, **_):
     """manifest.json = everything the browser needs. Quads/boxes normalized (0..1, top-left); rects in px."""
     rd = lambda n: json.load(open(f'{out}/meta/{n}.json')) if os.path.exists(f'{out}/meta/{n}.json') else None
@@ -375,6 +398,7 @@ if __name__ == '__main__':
     elif p == 'ref': pass_ref(**kw)
     elif p == 'object': pass_object(a[1], a[2], **kw)
     elif p == 'manifest': manifest(**kw)
+    elif p == 'hero': pass_hero(a[1], **kw)
     elif p == 'all':
         # one process per pass: every build() resets Blender, and a crash only loses one pass
         import subprocess
@@ -382,5 +406,5 @@ if __name__ == '__main__':
         jobs = [['ref'], ['bg', 'A'], ['bg', 'B'], ['closed'], ['door']] + \
                [['object', v, pid] for v in VIEWS for pid in LIVE]
         for j in jobs: subprocess.run([sys.executable, __file__, *j, *extra], check=True)
-    if p != 'manifest': manifest(**kw)
+    if p not in ('manifest', 'hero'): manifest(**kw)
     print(f'DONE {p} {time.time() - t:.1f}s')

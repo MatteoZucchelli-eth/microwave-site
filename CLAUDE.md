@@ -44,7 +44,7 @@ Real-time WebGL won't match Cycles. So everything is **pre-rendered in Blender C
 ## Content model
 `public/projects.json`: `{ id, title, url, object: "blender/objects/<id>.py", slot, hidden? }`.
 Adding a project = add a model script + one entry + run `render_object <id>` + push.
-Blog: markdown posts; latest title feeds the post-it; auto-post to X on publish (later, via a Vercel cron/serverless function).
+Blog: markdown posts (`content/posts/`); latest title feeds the post-it; auto-post to X on publish (later, via a Vercel cron/serverless function).
 Contact CTA: LinkedIn.
 
 ## Blender assets in this repo
@@ -68,6 +68,12 @@ Contact CTA: LinkedIn.
 - `app.js`: full-page canvas; each view is composed offscreen from its sheets, then drawn with a layout that shows the base framing without ever cropping the focus (A: microwave, B: cavity). States: closed → opening (door) → zoomin (A scales onto the cavity while B fades in, aligned on the cavity rect) → open (B) → zoomout → closing → closed.
 - Display / post-it / OPEN button are HTML mapped onto their quads (homography, `matrix3d`). Objects are hit-tested per pixel in B (shadows ignored); hotspots are real `<a>` links. Close: Esc, OPEN, or "close the door".
 - Countdown = loader: A closed sheets first; display holds `0:01` until everything is in. `localStorage['mw-seen']` skips the countdown; after the first open the display shows the time.
+
+## Pages (step 3)
+- Content in `content/`: `site.json` (name, motto, url, linkedin), `pages/<slug>.md` → `/<slug>/`, `posts/YYYY-MM-DD-<slug>.md` → `/blog/<slug>/`. Front matter: `title`, `label` (handwritten eyebrow), `object` (header image), `description`, `draft-note`.
+- Build: `.venv/bin/python tools/build.py` (needs `markdown`, see `requirements-build.txt`) writes the HTML into `public/` plus `/blog/`, `latest.json` (the post-it on the door), `feed.xml`, `404.html`. Output is committed, so Vercel serves it as-is. The build lists remaining `TODO` placeholders.
+- Header images: `.venv/bin/python blender/layers.py hero <id>` → `public/img/hero_<id>.webp` (view B, front-facing frame, high res).
+- Styles: `public/pages.css`. Sosta has no page ("soon").
 
 ## Deploy
 Static site (no bundler; Vercel serves `public/`) → GitHub repo → import in Vercel → custom domain.

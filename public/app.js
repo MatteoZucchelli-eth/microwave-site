@@ -10,13 +10,13 @@ const DOOR_FPS = 30;
 const ZOOM_MS = 1400;
 const COUNTDOWN_S = 5;
 const LIFT = 3;             // hover lift, render px
-const POST = { title: 'NEW POST:\nwhy robots\nneed jokes →', url: '/blog' };   // step 3: latest blog post
+
 const seen = localStorage.getItem('mw-seen') === '1';
 
 const $ = (id) => document.getElementById(id);
 const stage = $('stage'), cv = $('cv'), ctx = cv.getContext('2d');
 const json = (p) => fetch(p).then((r) => r.json());
-const [man, projects] = await Promise.all([json(R + 'manifest.json'), json('projects.json')]);
+const [man, projects, latest] = await Promise.all([json(R + 'manifest.json'), json('projects.json'), json('latest.json').catch(() => null)]);
 const N = man.frames, D = man.door_frames, V = man.views;
 const ids = projects.filter((p) => !p.hidden && man.objects[p.id]?.A && man.objects[p.id]?.B).map((p) => p.id);
 const meta = Object.fromEntries(projects.map((p) => [p.id, p]));
@@ -119,7 +119,11 @@ function mapQuad(el, quad, v, t) {
   const m = solve(A, b);
   el.style.transform = `matrix3d(${m[0]},${m[3]},0,${m[6]},${m[1]},${m[4]},0,${m[7]},0,0,1,0,${m[2]},${m[5]},0,1)`;
 }
-$('postit').href = POST.url; $('postit-text').textContent = POST.title;
+// the post-it on the door: latest blog post (tools/build.py writes latest.json)
+if (latest) {
+  $('postit').href = latest.url; $('postit-text').textContent = `NEW POST:\n${latest.title} →`;
+  $('postit').classList.toggle('long', latest.title.length > 26);
+} else $('postit').hidden = true;
 
 // ---------- state: closed -> opening -> zoomin -> open -> zoomout -> closing -> closed ----------
 let state = 'closed', tState = 0, openedOnce = false; const tLand = performance.now();
