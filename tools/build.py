@@ -4,7 +4,7 @@
 
   content/site.json          name, motto, url, linkedin
   content/pages/<slug>.md    -> /<slug>/        front matter: title, label, object (hero image), description
-  content/posts/YYYY-MM-DD-<slug>.md -> /blog/<slug>/   front matter: title, [label], [description], [draft-note]
+  content/posts/YYYY-MM-DD-<slug>.md -> /blog/<slug>/   front matter: title, [postit] (short title for the door), [label], [description], [draft-note]
 Also writes /blog/ (index), /latest.json (the post-it on the door), /feed.xml, /404.html.
 Lines starting with "TODO" (or inline "TODO: ...") render as yellow placeholder notes; the build lists them.
 """
@@ -58,14 +58,14 @@ for p in sorted(glob.glob(f'{C}/posts/*.md'), reverse=True):
     if note: todos.append(f' 1  posts/{base}.md (draft-note)')
     page(f'blog/{slug}/index.html', m['title'], note + md(txt, f'posts/{base}.md'), m.get('label', 'from the blog'),
          m.get('description', ''), meta=f'<p class="meta"><time datetime="{date}">{when}</time> · {cook(txt)}</p>', kind='post')
-    posts.append(dict(title=m['title'], url=f'/blog/{slug}/', date=date, when=when, cook=cook(txt)))
+    posts.append(dict(title=m['title'], postit=m.get('postit', m['title']), url=f'/blog/{slug}/', date=date, when=when, cook=cook(txt)))
 
 items = ''.join(f'<li><time datetime="{p["date"]}">{p["when"]}</time><a href="{p["url"]}">{html.escape(p["title"])}</a>'
                 f'<span class="cook">{p["cook"]}</span></li>' for p in posts) or '<li>nothing cooked yet.</li>'
 page('blog/index.html', 'Blog', f'<ul class="posts">{items}</ul>', 'reheated thoughts', 'Notes from Matteo.', kind='blog')
 
 # the post-it on the microwave door
-json.dump({'title': posts[0]['title'], 'url': posts[0]['url']} if posts else None, open(f'{PUB}/latest.json', 'w'))
+json.dump({'title': posts[0]['postit'], 'url': posts[0]['url']} if posts else None, open(f'{PUB}/latest.json', 'w'))
 
 # feed
 esc = html.escape
