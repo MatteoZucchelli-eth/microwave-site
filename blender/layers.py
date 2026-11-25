@@ -35,6 +35,9 @@ DOOR_FRAMES = 24
 DOOR_OPEN = 78          # degrees, matches v03
 PLATE_ROT0 = 0.9        # v01 composition at frame 0
 SLOT_R = 0.075; N_SLOTS = 4
+# v01 used light_power=5 + near-white enamel: fine behind the closed mesh, blown out (clipped white) with the door open
+INTERIOR_LIGHT = 0.75
+ENAMEL = '#B8AD97'
 PROJECTS = json.load(open(os.path.join(ROOT, 'projects.json')))
 
 
@@ -42,7 +45,9 @@ PROJECTS = json.load(open(os.path.join(ROOT, 'projects.json')))
 def build():
     s = reset(); objects_mats()
     world((0.75, 0.8, 0.8), 0.32); breakroom(); fluo()
-    _, plate = microwave(style='beige', disp='', items=(), plate_rot=PLATE_ROT0, light_power=5)
+    _, plate = microwave(style='beige', disp='', items=(), plate_rot=PLATE_ROT0, light_power=INTERIOR_LIGHT)
+    en = bpy.data.materials['enamel'].node_tree.nodes['Principled BSDF']
+    en.inputs['Base Color'].default_value = lib.hexc(ENAMEL); en.inputs['Roughness'].default_value = 0.4
     items = {}
     for p in PROJECTS:
         if p.get('hidden'): continue
@@ -163,6 +168,8 @@ def door_as_holdout(door):
             ho = n.new('ShaderNodeHoldout'); nt.links.new(ho.outputs[0], final.inputs[1])
             for m in n:
                 if m.type == 'MIX_SHADER' and m is not final: m.inputs[0].default_value = 0.0   # holes: no glossy
+                # holes fully clear: their tint is already in fg_closed, and as alpha it would veil the window once per object
+                if m.type == 'BSDF_TRANSPARENT': m.inputs[0].default_value = (1, 1, 1, 1)
         else: o.is_holdout = True
 
 def pass_bg(preset, out, **_):
