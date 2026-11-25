@@ -15,7 +15,7 @@ A glass turntable inside rotates. The objects on the plate are the navigation:
 | Object on plate | Goes to | Notes |
 |---|---|---|
 | Humanoid robot (G1-style) | CV / robotics projects | replace placeholder with Unitree's official G1 meshes (unitree_ros on GitHub) |
-| sosta plug mascot (lime #C6F24E), **under a plastic microwave cover with a "DON'T OPEN YET" sticker** | nothing yet ("soon" tooltip) | startup can't be shown publicly yet |
+| sosta plug mascot (lime #C6F24E), uncovered (`objects/sosta.py`) | nothing yet ("soon" tooltip) | startup can't be shown publicly yet |
 | Pretzel | Brezel (German-learning app) | |
 | Espresso cup | About (personal section) | |
 
@@ -48,7 +48,7 @@ Blog: markdown posts; latest title feeds the post-it; auto-post to X on publish 
 Contact CTA: LinkedIn.
 
 ## Blender assets in this repo
-- `blender/lib.py` — microwave (parametric), materials (perforated door mesh, glass, enamel), plate, robot, plug mascot, `plug_lid` (covered sosta), `plug_foil`, pretzel, espresso, post-it helpers, camera/lights. Pure Python (`bpy`), procedural, no external assets.
+- `blender/lib.py` — microwave (parametric), materials (perforated door mesh, glass, enamel), plate, robot, plug mascot, `plug_lid` (covered sosta, dropped), `plug_foil`, pretzel, espresso, post-it helpers, camera/lights. Pure Python (`bpy`), procedural, no external assets.
 - `blender/scenes_breakroom.py` — the 16 breakroom variants; **`v01` is the chosen base**, `v06` = live-note post-it, `v03` = door open lighting.
 - Run: `pip install bpy` (needs the Python version bpy targets) or Blender's bundled Python:
   `python blender/scenes_breakroom.py 1 900 48 out/` → renders variant 1 at 900px, 48 samples.

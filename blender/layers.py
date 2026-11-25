@@ -48,7 +48,8 @@ def build():
         if p.get('hidden'): continue
         fn = importlib.import_module('objects.' + p['id']).build
         a = p['slot'] * math.tau / N_SLOTS
-        items[p['id']] = fn((math.cos(a) * SLOT_R, math.sin(a) * SLOT_R, 0.003), p.get('scale', 1.0), -PLATE_ROT0, plate)
+        # face outward from the plate centre (models face -y): each object faces the camera as it passes the front
+        items[p['id']] = fn((math.cos(a) * SLOT_R, math.sin(a) * SLOT_R, 0.003), p.get('scale', 1.0), a + math.pi / 2, plate)
     hinge = bpy.data.objects['hinge']
     glass_to_alpha(bpy.data.materials['doorglass'])
     # blank post-it (text is an HTML overlay), parented to the door so it swings with it
