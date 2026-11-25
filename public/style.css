@@ -1,0 +1,60 @@
+@font-face { font-family: hand; src: url(fonts/ComicRelief-Regular.ttf); font-display: block; }
+@font-face { font-family: vfd; src: url(fonts/DejaVuSansMono-Bold.ttf); font-display: block; }
+
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { background: #dcdfdb; -webkit-tap-highlight-color: transparent; }
+
+/* the canvas is the whole page: the render is overscanned so it fills any viewport */
+#cv { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+#stage.hovering #cv, #stage.openable #cv { cursor: pointer; }
+
+/* overlays mapped onto a screen quad with a homography (matrix3d); local box = width x height */
+.quad { position: fixed; left: 0; top: 0; transform-origin: 0 0; transition: opacity .2s; }
+.quad.off { opacity: 0; pointer-events: none; }
+
+.display {
+  width: 140px; height: 40px; display: grid; place-items: center;
+  font: 26px/1 vfd, ui-monospace, monospace; letter-spacing: 1px;
+}
+.display > span { grid-area: 1 / 1; }
+.display .ghost { color: #59f07a; opacity: .06; }
+#digits { color: #8dffa5; text-shadow: 0 0 3px #59f07a, 0 0 9px #2bd456, 0 0 18px #1a9e3c; }
+#digits.blink { animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: .15; } }
+
+.open-btn { width: 120px; height: 30px; border: 0; background: none; padding: 0; cursor: pointer; border-radius: 4px; }
+.open-btn:focus-visible { outline: 2px solid #59f07a; outline-offset: 2px; }
+
+.postit {
+  width: 100px; height: 100px; padding: 12px 8px; display: flex; align-items: center; justify-content: center;
+  font: 13px/1.25 hand, "Comic Sans MS", cursive; color: #1a2a7a; text-align: center; text-decoration: none;
+  white-space: pre-line;
+}
+.postit:hover span, .postit:focus-visible span { text-decoration: underline wavy #1a2a7a55; }
+.postit:focus-visible { outline: 2px dashed #1a2a7a; }
+
+/* object hit areas: real links (keyboard + screen readers); the mouse hit-test is per pixel in app.js */
+#hot a { position: fixed; pointer-events: none; color: inherit; text-decoration: none; outline: none; }
+#hot a .label {
+  position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, 6px) rotate(-3deg);
+  font: clamp(16px, 2.2vw, 26px)/1 hand, cursive; color: #fff; white-space: nowrap;
+  text-shadow: 0 1px 2px #0009, 0 0 10px #0007;
+  opacity: 0; transition: opacity .15s, transform .2s; padding-bottom: 6px;
+}
+#hot a.on .label, #hot a:focus-visible .label, body.touch #stage.open #hot a .label { opacity: 1; transform: translate(-50%, 0) rotate(-3deg); }
+#hot a.nope .label { animation: nope .35s; }
+@keyframes nope { 25% { margin-left: -5px } 75% { margin-left: 5px } }
+#hot a:focus-visible { outline: 1px dashed #fff8; outline-offset: 3px; }
+#stage:not(.open) #hot { visibility: hidden; }
+
+#close {
+  position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%) rotate(-2deg);
+  border: 0; background: none; cursor: pointer; padding: 6px 10px;
+  font: clamp(15px, 1.6vw, 20px)/1 hand, cursive; color: #5a5348; opacity: 0; pointer-events: none; transition: opacity .3s;
+}
+#close::before { content: "← "; }
+#close:hover { text-decoration: underline wavy #5a534866; }
+#stage.open #close { opacity: .8; pointer-events: auto; }
+
+.noscript { position: fixed; bottom: 1rem; left: 1rem; font: 14px system-ui; }

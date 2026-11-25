@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Matteo Zucchelli — make things for the world</title>
+  <meta name="description" content="Matteo Zucchelli builds things. Open the microwave.">
+  <link rel="preload" href="render/lo/A_fg_closed.webp" as="image">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="stage" aria-label="A breakroom microwave. The things on the plate are the menu.">
+    <canvas id="cv"></canvas>
+
+    <div class="quad display" id="display" aria-hidden="true"><span class="ghost">88:88</span><span id="digits"></span></div>
+    <button class="quad open-btn" id="open-btn" aria-label="Open the microwave door"></button>
+    <a class="quad postit" id="postit" href="#"><span id="postit-text"></span></a>
+
+    <nav id="hot" aria-label="Projects"></nav>
+    <button id="close" type="button">close the door</button>
+  </main>
+
+  <noscript>
+    <p class="noscript">The microwave needs JavaScript. Meanwhile:
+      <a href="/cv">CV</a> · <a href="/brezel">Brezel</a> · <a href="/about">About</a></p>
+  </noscript>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

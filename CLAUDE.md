@@ -42,7 +42,7 @@ Real-time WebGL won't match Cycles. So everything is **pre-rendered in Blender C
 - Output frames as WebP/AVIF sprite sheets or a short video per layer; preload, keep the homepage fast on mobile.
 
 ## Content model
-`projects.json`: `{ id, title, url, object: "blender/objects/<id>.py", slot, hidden? }`.
+`public/projects.json`: `{ id, title, url, object: "blender/objects/<id>.py", slot, hidden? }`.
 Adding a project = add a model script + one entry + run `render_object <id>` + push.
 Blog: markdown posts; latest title feeds the post-it; auto-post to X on publish (later, via a Vercel cron/serverless function).
 Contact CTA: LinkedIn.
@@ -55,15 +55,22 @@ Contact CTA: LinkedIn.
 - Switch Cycles to GPU on this machine (Metal / OptiX / CUDA) — the scripts default to CPU.
 - Models are placeholders built from primitives; lighting carries the realism. Improve geometry where it shows.
 
-## Render pipeline (built, step 1)
+## Render pipeline (built)
 - Setup: `uv venv -p 3.11 .venv && uv pip install -p .venv -r requirements-render.txt` (bpy 5.0.1 = Python 3.11). Uses OptiX if present.
-- `.venv/bin/python blender/layers.py all [--preset lo|hi]` → `public/render/<preset>/`; single passes: `bg`, `closed`, `door`, `ref`, `object <id>` (= render_object).
-- Layers: `bg.webp` (1 frame: the plate is a symmetric disc), `fg_closed.webp` (exact closed-door frame), `door/NN.webp` (alpha, last = fg_open), `objects/<id>/{open,closed}/NNN.webp`, `hotspots.json` (per-frame object boxes + depth, post-it/display/OPEN quads; normalized, top-left origin).
-- Composite: closed = `fg_closed` + `objects/*/closed`; opening/open = `bg` + `objects/*/open` (far→near by depth) + `door[i]`. Why not one door layer over everything: the lit cavity is brighter than white and the mesh averages it in HDR, so 8-bit alpha-over makes the closed window ~40% too dark.
-- Check: `.venv/bin/python tools/composite_check.py lo <frame> <closed|door_frame>` vs `ref.webp` / `ref_open.webp`.
+- `.venv/bin/python blender/layers.py all [--preset lo|hi]` (~10 min lo). Single passes: `bg A|B`, `closed`, `door`, `ref`, `object A|B <id>` (= render_object; run it for both views), `manifest`. Frames go to `out/<preset>/` (gitignored), published files to `public/render/<preset>/`.
+- Two cameras: **A** wide breakroom shot (closed + door anim), **B** frontal close-up of the open cavity. The page zooms A→B after the door opens.
+- Static frames (`A_bg`, `A_fg_closed`, `B_bg`) are overscanned (`OVERSCAN` = 1.6×2.8 the base framing) so the render fills any viewport: the page around the microwave is the render. Animated layers render as per-frame crops (Cycles border, verified pixel-exact) packed into one sprite sheet per sequence: `A_door`, `A_closed_<id>`, `A_open_<id>`, `B_open_<id>`. `manifest.json` has the views (size, base framing, focus/cavity/display/OPEN quads), sheet rects, per-frame object boxes + depth, post-it quads.
+- Composite: A closed = `A_fg_closed` + `A_closed_*`; A door anim = `A_bg` + `A_open_*` (far→near) + `A_door[i]`; B = `B_bg` + `B_open_*`. Why the exact closed frame: the mesh averages the lit cavity in HDR, 8-bit alpha-over can't.
+- Check: `.venv/bin/python tools/composite_check.py lo <A|B> <frame> [closed|door_frame]` → `out/lo/check/`, compare with `out/lo/ref_*.webp`.
+
+## Site (step 2)
+- No build step, no dependencies: `public/` is the web root (`index.html`, `style.css`, `app.js`, `fonts/`, `projects.json`, `render/`). Dev: `python3 -m http.server 8000 -d public`.
+- `app.js`: full-page canvas; each view is composed offscreen from its sheets, then drawn with a layout that shows the base framing without ever cropping the focus (A: microwave, B: cavity). States: closed → opening (door) → zoomin (A scales onto the cavity while B fades in, aligned on the cavity rect) → open (B) → zoomout → closing → closed.
+- Display / post-it / OPEN button are HTML mapped onto their quads (homography, `matrix3d`). Objects are hit-tested per pixel in B (shadows ignored); hotspots are real `<a>` links. Close: Esc, OPEN, or "close the door".
+- Countdown = loader: A closed sheets first; display holds `0:01` until everything is in. `localStorage['mw-seen']` skips the countdown; after the first open the display shows the time.
 
 ## Deploy
-Static site (Vite or Next.js static export — pick the lighter) → GitHub repo → import in Vercel → custom domain.
+Static site (no bundler; Vercel serves `public/`) → GitHub repo → import in Vercel → custom domain.
 
 ## Order of work
 1. Repo + layer render pipeline (bg / object / fg / hotspots) from `scenes_breakroom.v01`, low-res first.
