@@ -1,0 +1,17 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "python3 -m pip install -q -r requirements-build.txt && python3 tools/build.py",
+  "outputDirectory": "public",
+  "redirects": [
+    { "source": "/this-or-that", "destination": "/this-or-that/", "permanent": true },
+    { "source": "/login", "destination": "/api/auth/login", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/this-or-that/", "destination": "https://this-or-that-six.vercel.app/" },
+    { "source": "/this-or-that/:path*", "destination": "https://this-or-that-six.vercel.app/:path*" }
+  ],
+  "headers": [
+    { "source": "/render/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }] },
+    { "source": "/api/(.*)", "headers": [{ "key": "Cache-Control", "value": "no-store" }] }
+  ]
+}

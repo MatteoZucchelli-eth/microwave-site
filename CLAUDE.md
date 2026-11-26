@@ -70,13 +70,16 @@ Contact CTA: LinkedIn.
 - Countdown = loader: A closed sheets first; display holds `0:01` until everything is in. `localStorage['mw-seen']` skips the countdown; after the first open the display shows the time.
 
 ## Pages (step 3)
-- Content in `content/`: `site.json` (name, motto, url, linkedin), `pages/<slug>.md` → `/<slug>/`, `posts/YYYY-MM-DD-<slug>.md` → `/blog/<slug>/`. Front matter: `title`, `label` (handwritten eyebrow), `object` (header image), `description`, `draft-note`.
-- Build: `.venv/bin/python tools/build.py` (needs `markdown`, see `requirements-build.txt`) writes the HTML into `public/` plus `/blog/`, `latest.json` (the post-it on the door), `feed.xml`, `404.html`. Output is committed, so Vercel serves it as-is. The build lists remaining `TODO` placeholders.
-- Header images: `.venv/bin/python blender/layers.py hero <id>` → `public/img/hero_<id>.webp` (view B, front-facing frame, high res).
-- Styles: `public/pages.css`. Sosta has no page ("soon").
+- Content in `content/`: `site.json` (name, motto, url, linkedin), `pages/<slug>.md` → `/<slug>/` (cv, brezel), `pages/coffee.md` = the short about on top of `/coffee/`, `coffee/YYYY-MM-DD-<slug>.md` → `/coffee/<slug>/`. Front matter: `title`, `postit` (short title for the door), `label`, `object` (header image), `description`, `draft: true` (unpublished), `draft-note` (published with a yellow note). There is no other blog: the espresso opens `/coffee/`.
+- Build: `tools/build.py` (needs `markdown`) → pages, `latest.json` (the post-it), `feed.xml`, `404.html`. **Vercel runs it on every deploy** (`vercel.json` buildCommand); generated files are gitignored. Locally: `.venv/bin/python tools/build.py`.
+- Header images: `.venv/bin/python blender/layers.py hero <id>` → `public/img/hero_<id>.webp`.
+- **Writing from the browser** (owner only): go to `/login` → GitHub sign-in (identity only, no scopes) → signed HttpOnly session cookie if the login is `OWNER_GITHUB_LOGIN`. `public/edit.js` (loaded on coffee pages) shows the editor only when `/api/auth/me` confirms; visitors never call it (it needs the `mw_owner` hint cookie first). Saving = `api/posts.js` commits the Markdown via the GitHub API with a fine-grained token (this repo, Contents rw) → Vercel rebuilds (~1 min). Only `content/pages/coffee.md` and `content/coffee/*.md` are writable. Local backup in localStorage while typing.
+- `/this-or-that/` is a Vercel rewrite to https://this-or-that-six.vercel.app (the app uses relative paths, so assets, `api/session` and share links stay on this domain).
 
 ## Deploy
-Static site (no bundler; Vercel serves `public/`) → GitHub repo → import in Vercel → custom domain.
+GitHub repo → import in Vercel (framework: Other; `vercel.json` sets build + output `public/`) → custom domain. Functions in `api/` (Node, zero deps).
+Env vars: `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` (GitHub OAuth app, callback `https://<domain>/api/auth/callback`), `OWNER_GITHUB_LOGIN`, `SESSION_SECRET` (≥32 random chars), `CONTENT_REPO` (`owner/repo`), `CONTENT_BRANCH` (default `main`), `GITHUB_CONTENT_TOKEN` (fine-grained PAT: this repo only, Contents read & write).
+The rendered sheets in `public/render/` are gitignored today: commit the final set before deploying.
 
 ## Order of work
 1. Repo + layer render pipeline (bg / object / fg / hotspots) from `scenes_breakroom.v01`, low-res first.

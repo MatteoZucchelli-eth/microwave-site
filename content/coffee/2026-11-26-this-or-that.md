@@ -5,7 +5,7 @@ label: a side project that got out of hand
 description: How I built This or That, a game where a small model learns your taste in art from 50 picks and then predicts your next 20.
 draft-note: Drafted by Claude from the research notes (taste/CONTEXT.md). Check the numbers and the tone, then delete this line.
 ---
-**[Play it here →](https://this-or-that-six.vercel.app)** It takes two minutes and works best on a phone.
+**[Play it here →](/this-or-that/)** It takes two minutes and works best on a phone.
 
 You see two artworks and tap the one you like more. After 50 picks, a small model has learned your taste. Then it plays 20 more rounds, and before each one it locks in a guess about which image you'll pick. At the end you see how often it was right, and how often a model of *everyone's* taste would have been right instead.
 
